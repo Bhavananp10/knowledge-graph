@@ -1,4 +1,4 @@
-# Knowledge Graph Generator
+# Knowledge Graph AI
 
 Turn raw text into an interactive knowledge graph. The app sends your text to an LLM (via [LangChain](https://www.langchain.com/)'s graph transformer), extracts entities and the relationships between them, and renders the result as an explorable graph.
 
@@ -20,7 +20,14 @@ Both share the same extraction logic in [`generate_knowledge_graph.py`](generate
   - Streamlit MVP — physics-based PyVis graph with node/edge filtering
 - **Invalid-edge filtering**: relationships whose endpoints aren't both present as nodes are dropped before rendering
 
+## DEMO
+
+https://lnkd.in/p/gDe-Q9zw
+
 ## Architecture
+
+<img width="1536" height="1024" alt="ChatGPT Image Sep 2, 2026, 12_57_45 PM" src="https://github.com/user-attachments/assets/50c5c130-9734-459b-bae9-ead2561b94ff" />
+
 
 ```
 Text input
