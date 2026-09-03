@@ -1,19 +1,20 @@
 from langchain_experimental.graph_transformers import LLMGraphTransformer
 from langchain_core.documents import Document
-from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from pyvis.network import Network
 
 from dotenv import load_dotenv
 import os
 import asyncio
+import json
 
 
 # Load the .env file
 load_dotenv()
 # Get API key from environment variable
-api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("GROQ_API_KEY")
 
-llm = ChatOpenAI(temperature=0, model_name="gpt-4o")
+llm = ChatGroq(model_name="openai/gpt-oss-120b", temperature=0)
 
 graph_transformer = LLMGraphTransformer(llm=llm)
 
@@ -46,7 +47,7 @@ def visualize_graph(graph_documents):
     """
     # Create network
     net = Network(height="1200px", width="100%", directed=True,
-                      notebook=False, bgcolor="#222222", font_color="white", filter_menu=True, cdn_resources='remote') 
+                      notebook=False, bgcolor="#ffffff", font_color="#1a1a1a", filter_menu=True, cdn_resources='remote')
 
     nodes = graph_documents[0].nodes
     relationships = graph_documents[0].relationships
@@ -83,21 +84,81 @@ def visualize_graph(graph_documents):
         except:
             continue  # Skip edge if error occurs
 
-    # Configure graph layout and physics
-    net.set_options("""
-        {
-            "physics": {
-                "forceAtlas2Based": {
-                    "gravitationalConstant": -100,
-                    "centralGravity": 0.01,
-                    "springLength": 200,
-                    "springConstant": 0.08
-                },
-                "minVelocity": 0.75,
-                "solver": "forceAtlas2Based"
+    # Assign a soft, professional pastel color to each distinct node group/type
+    pastel_palette = [
+        "#AEC6E8", "#FFD8B1", "#B5EAD7", "#FFB7B2", "#C7CEEA",
+        "#FFF3B0", "#D5AAFF", "#A0E7E5", "#FFDAC1", "#E2F0CB",
+    ]
+    node_types = sorted({node.type for node in nodes})
+    groups_options = {
+        node_type: {
+            "color": {
+                "background": pastel_palette[i % len(pastel_palette)],
+                "border": "#4A4A4A",
+                "highlight": {
+                    "background": pastel_palette[i % len(pastel_palette)],
+                    "border": "#1a1a1a"
+                }
             }
         }
-    """)
+        for i, node_type in enumerate(node_types)
+    }
+
+    # Configure graph appearance, layout, physics, and interaction
+    options = {
+        "nodes": {
+            "shape": "dot",
+            "size": 18,
+            "borderWidth": 2,
+            "font": {
+                "color": "#1a1a1a",
+                "size": 15,
+                "face": "Arial, Helvetica, sans-serif",
+                "strokeWidth": 0
+            }
+        },
+        "edges": {
+            "color": {"color": "#9AA5B1", "highlight": "#4A4A4A"},
+            "width": 1.5,
+            "smooth": {"enabled": True, "type": "continuous", "roundness": 0.15},
+            "font": {
+                "color": "#555555",
+                "size": 11,
+                "face": "Arial, Helvetica, sans-serif",
+                "strokeWidth": 0,
+                "align": "top",
+                "background": "rgba(255,255,255,0.7)"
+            }
+        },
+        "groups": groups_options,
+        "interaction": {
+            "zoomSpeed": 0.2,
+            "zoomView": True,
+            "dragView": True,
+            "dragNodes": True,
+            "hideEdgesOnDrag": True,
+            "hideEdgesOnZoom": True,
+            "navigationButtons": True
+        },
+        "physics": {
+            "forceAtlas2Based": {
+                "gravitationalConstant": -300,
+                "centralGravity": 0.01,
+                "springLength": 250,
+                "springConstant": 0.05,
+                "damping": 0.4,
+                "avoidOverlap": 0.8
+            },
+            "minVelocity": 0.75,
+            "solver": "forceAtlas2Based",
+            "stabilization": {
+                "enabled": True,
+                "iterations": 300,
+                "fit": True
+            }
+        }
+    }
+    net.set_options(json.dumps(options))
 
     output_file = "knowledge_graph.html"
     try:

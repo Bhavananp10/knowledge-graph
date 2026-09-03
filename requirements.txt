@@ -2,6 +2,7 @@
 langchain>=0.1.0
 langchain-experimental>=0.0.45
 langchain-openai>=0.1.0
+langchain-groq>=0.1.0
 
 # Environment variable support
 python-dotenv>=1.0.0
@@ -11,3 +12,7 @@ pyvis>=0.3.2
 
 # Web UI
 streamlit>=1.32.0
+
+# Backend API
+fastapi>=0.100.0
+uvicorn>=0.23.0
